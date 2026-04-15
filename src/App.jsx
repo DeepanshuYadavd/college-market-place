@@ -7,6 +7,9 @@ import Wishlist from "./pages/Wishlist";
 import Chats from "./pages/Chats";
 import MyListing from "./pages/MyListing";
 import Signup from "./pages/auth/Signup";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -14,29 +17,33 @@ function App() {
       element: <Layout />,
       children: [
         {
-          path: "/",
-          element: <Dashboard />,
-        },
-        {
-          path: "/products",
-          element: <Products />,
-        },
-        {
-          path: "/wishlist",
-          element: <Wishlist />,
-        },
-        {
-          path: "/orders",
-          element: <Orders />,
-        },
-        {
-          path: "/chats",
-          element: <Chats />,
-        },
-
-        {
-          path: "/my-listing",
-          element: <MyListing />,
+          element: <ProtectedRoute />, // Parent wrapper for protected routes
+          children: [
+            {
+              path: "/",
+              element: <Dashboard />,
+            },
+            {
+              path: "/products",
+              element: <Products />,
+            },
+            {
+              path: "/wishlist",
+              element: <Wishlist />,
+            },
+            {
+              path: "/orders",
+              element: <Orders />,
+            },
+            {
+              path: "/chats",
+              element: <Chats />,
+            },
+            {
+              path: "/my-listing",
+              element: <MyListing />,
+            },
+          ],
         },
         {
           path: "/signup",
@@ -46,9 +53,9 @@ function App() {
     },
   ]);
   return (
-    <>
+    <AuthProvider>
       <RouterProvider router={router} />
-    </>
+    </AuthProvider>
   );
 }
 
