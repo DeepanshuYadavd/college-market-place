@@ -11,26 +11,20 @@ import {
   Paper,
   InputAdornment,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
   Chip,
   Fade,
   useTheme,
 } from "@mui/material";
 import {
-  Person,
   Email,
   Lock,
   Visibility,
   VisibilityOff,
-  School,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import signupAnimation from "../../assets/signup.json";
-import apiClient from "../../api/apiClient";
+import signinAnimation from "../../assets/signin.json";
+import { useAuth } from "../../context/AuthContext";
 
 // Floating Tab Component
 const FloatingTab = ({ label, position, delay, color }) => {
@@ -76,38 +70,16 @@ const FloatingTab = ({ label, position, delay, color }) => {
   );
 };
 
-const Signup = () => {
+const Signin = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    userName: "",
     email: "",
     password: "",
-    college: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [colleges, setColleges] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [fetchingColleges, setFetchingColleges] = useState(false);
-
-  // Fetch colleges on component mount
-  useEffect(() => {
-    fetchColleges();
-  }, []);
-
-  const fetchColleges = async () => {
-    setFetchingColleges(true);
-    try {
-      const response = await apiClient.get("/college/get-colleges");
-      if (response.data && response.data.data) {
-        setColleges(response.data.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch colleges:", err);
-    } finally {
-      setFetchingColleges(false);
-    }
-  };
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -118,44 +90,41 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Basic validation
-    if (!formData.userName || !formData.email || !formData.password || !formData.college) {
-      toast.error("All fields are required");
+    if (!formData.email || !formData.password) {
+      toast.error("Email and password are required");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await apiClient.post("/auth/signup", formData);
-      if (response.data) {
-        toast.success("Account created successfully!");
-        navigate("/signin");
-      }
+      await login(formData);
+      toast.success("Welcome back!");
+      navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Signup failed. Please try again.");
+      toast.error(err.response?.data?.message || "Signin failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Floating tabs - repositioned to left above Lottie
+  // Floating tabs - repositioned to be above/around Lottie at left
   const floatingTabs = [
-    { label: "Campus", position: { top: "12%", left: "12%" }, delay: 200, color: theme.palette.primary.main },
-    { label: "Market", position: { top: "32%", left: "6%" }, delay: 400, color: theme.palette.secondary.main },
-    { label: "Place", position: { bottom: "28%", left: "14%" }, delay: 600, color: theme.palette.info.main },
+    { label: "Campus", position: { top: "15%", left: "10%" }, delay: 200, color: theme.palette.primary.main },
+    { label: "Market", position: { top: "35%", left: "5%" }, delay: 400, color: theme.palette.secondary.main },
+    { label: "Place", position: { bottom: "25%", left: "15%" }, delay: 600, color: theme.palette.info.main },
   ];
 
   return (
     <Box
       sx={{
-        height: { md: "calc(100vh - 64px)", xs: "auto" }, // Subtracting common header height
+        height: { md: "calc(100vh - 64px)", xs: "auto" }, // Fit inside DashboardLayout (header is approx 64px)
         minHeight: { xs: "calc(100vh - 64px)" },
         bgcolor: "background.default",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
-        overflow: "hidden", // Fix scroll
+        overflow: { md: "hidden", xs: "auto" },
         p: { xs: 2, md: 4 },
         transition: "background-color 0.3s ease",
       }}
@@ -169,11 +138,12 @@ const Signup = () => {
             md={6} 
             sx={{ 
               display: { xs: "none", md: "flex" }, 
-              justifyContent: "center", 
-              order: { xs: 1, md: 1 },
+              justifyContent: "center",
+              order: { xs: 2, md: 1 },
               position: "relative"
             }}
           >
+            {/* Floating Tabs nested here or positioned relative to this grid */}
             {floatingTabs.map((tab, index) => (
               <FloatingTab key={index} {...tab} />
             ))}
@@ -186,11 +156,11 @@ const Signup = () => {
                   : "drop-shadow(0 20px 40px rgba(0,0,0,0.1))",
               }}
             >
-              <Lottie animationData={signupAnimation} loop={true} />
+              <Lottie animationData={signinAnimation} loop={true} />
             </Box>
           </Grid>
 
-          {/* Right Side - Signup Form */}
+          {/* Right Side - Signin Form */}
           <Grid 
             item 
             xs={12} 
@@ -224,43 +194,16 @@ const Signup = () => {
                   color: "text.primary",
                 }}
               >
-                Create Account
+                Welcome Back
               </Typography>
-              <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
-                Join Campus Market Place today
+              <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+                Sign in to your account
               </Typography>
 
               <Box component="form" onSubmit={handleSubmit} noValidate>
-                {/* Username Field */}
-                <TextField
-                  margin="dense"
-                  required
-                  fullWidth
-                  id="userName"
-                  label="Username"
-                  name="userName"
-                  autoComplete="username"
-                  autoFocus
-                  value={formData.userName}
-                  onChange={handleChange}
-                  disabled={loading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    },
-                  }}
-                />
-
                 {/* Email Field */}
                 <TextField
-                  margin="dense"
+                  margin="normal"
                   required
                   fullWidth
                   id="email"
@@ -268,6 +211,7 @@ const Signup = () => {
                   name="email"
                   autoComplete="email"
                   type="email"
+                  autoFocus
                   value={formData.email}
                   onChange={handleChange}
                   disabled={loading}
@@ -287,14 +231,14 @@ const Signup = () => {
 
                 {/* Password Field */}
                 <TextField
-                  margin="dense"
+                  margin="normal"
                   required
                   fullWidth
                   name="password"
                   label="Password"
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
                   disabled={loading}
@@ -323,43 +267,6 @@ const Signup = () => {
                   }}
                 />
 
-                {/* College Select Field */}
-                <FormControl fullWidth margin="dense" required>
-                  <InputLabel id="college-label">College</InputLabel>
-                  <Select
-                    labelId="college-label"
-                    id="college"
-                    name="college"
-                    value={formData.college}
-                    label="College"
-                    onChange={handleChange}
-                    disabled={loading || fetchingColleges}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <School color="primary" sx={{ ml: 1 }} />
-                      </InputAdornment>
-                    }
-                    sx={{
-                      borderRadius: 2,
-                    }}
-                  >
-                    {fetchingColleges ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        Loading colleges...
-                      </MenuItem>
-                    ) : colleges.length === 0 ? (
-                      <MenuItem disabled>No colleges available</MenuItem>
-                    ) : (
-                      colleges.map((college) => (
-                        <MenuItem key={college._id} value={college._id}>
-                          {college.collegeName}
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                </FormControl>
-
                 {/* Submit Button */}
                 <Button
                   type="submit"
@@ -385,23 +292,23 @@ const Signup = () => {
                   {loading ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    "Sign Up"
+                    "Sign In"
                   )}
                 </Button>
 
-                {/* Sign In Link */}
-                <Box sx={{ textAlign: "center", mt: 1 }}>
+                {/* Sign Up Link */}
+                <Box sx={{ textAlign: "center", mt: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Already have an account?{" "}
+                    Don't have an account?{" "}
                     <Link
-                      to="/signin"
+                      to="/signup"
                       style={{
                         color: theme.palette.primary.main,
                         textDecoration: "none",
                         fontWeight: 600,
                       }}
                     >
-                      Sign in
+                      Sign up
                     </Link>
                   </Typography>
                 </Box>
@@ -414,4 +321,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Signin;

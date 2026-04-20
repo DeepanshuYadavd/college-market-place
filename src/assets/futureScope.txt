@@ -1,0 +1,8 @@
+
+1. problem :
+student can register wth any email and can select any college
+
+solution:
+if mail is correct only then admin will verify the account
+
+

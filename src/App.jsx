@@ -7,8 +7,10 @@ import Wishlist from "./pages/Wishlist";
 import Chats from "./pages/Chats";
 import MyListing from "./pages/MyListing";
 import Signup from "./pages/auth/Signup";
+import Signin from "./pages/auth/Signin";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const router = createBrowserRouter([
@@ -48,6 +50,10 @@ function App() {
         {
           path: "/signup",
           element: <Signup />,
+        },
+        {
+          path: "/signin",
+          element: <Signin />,
         },
       ],
     },
