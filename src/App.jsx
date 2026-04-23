@@ -19,16 +19,17 @@ function App() {
       element: <Layout />,
       children: [
         {
-          element: <ProtectedRoute />, // Parent wrapper for protected routes
+          path: "/",
+          element: <Dashboard />,
+        },
+        {
+          path: "/products",
+          element: <Products />,
+        },
+
+        {
+          element: <ProtectedRoute />,
           children: [
-            {
-              path: "/",
-              element: <Dashboard />,
-            },
-            {
-              path: "/products",
-              element: <Products />,
-            },
             {
               path: "/wishlist",
               element: <Wishlist />,
@@ -47,6 +48,7 @@ function App() {
             },
           ],
         },
+
         {
           path: "/signup",
           element: <Signup />,
