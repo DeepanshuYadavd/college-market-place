@@ -5,7 +5,8 @@ import CategoryIcon from "@mui/icons-material/Category";
 import ChatIcon from "@mui/icons-material/Chat";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
-
+import LogoutIcon from "@mui/icons-material/Logout";
+import Person3Icon from "@mui/icons-material/Person3";
 export const getNavigation = (user) => [
   {
     segment: "",
@@ -40,9 +41,24 @@ export const getNavigation = (user) => [
     title: "My Listing",
     icon: <FormatListBulletedIcon />,
   },
-  {
-    segment: "signup",
-    title: "Register",
-    icon: <HowToRegIcon />,
-  },
+  ...(!user
+    ? [
+        {
+          segment: "signup",
+          title: "Register",
+          icon: <HowToRegIcon />,
+        },
+      ]
+    : [
+        {
+          segment: "my-profile",
+          title: "My Profile",
+          icon: <Person3Icon />,
+        },
+        {
+          segment: "signOut",
+          title: "Sign out",
+          icon: <LogoutIcon />,
+        },
+      ]),
 ];

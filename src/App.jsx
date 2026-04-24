@@ -11,6 +11,8 @@ import Signin from "./pages/auth/Signin";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "react-toastify/dist/ReactToastify.css";
+import MyProfile from "./pages/MyProfile";
+import Signout from "./pages/auth/Signout";
 
 function App() {
   const router = createBrowserRouter([
@@ -45,6 +47,14 @@ function App() {
             {
               path: "/my-listing",
               element: <MyListing />,
+            },
+            {
+              path: "/my-profile",
+              element: <MyProfile />,
+            },
+            {
+              path: "/signOut",
+              element: <Signout />,
             },
           ],
         },
