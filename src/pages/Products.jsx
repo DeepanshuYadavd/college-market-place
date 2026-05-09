@@ -4,19 +4,24 @@ import apiClient from "../api/apiClient";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [wishlistedIds, setWishlistedIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const categories = ["All", "Electronics", "Books", "Clothing", "Furniture", "Stationery", "Sports", "Other"];
 
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get("/products/get-all");
-      setProducts(response.data.data || []);
+      const [productsRes, wishlistRes] = await Promise.all([
+        apiClient.get("/products/get-all"),
+        apiClient.get("/wishlist/ids").catch(() => ({ data: { data: [] } })) // Handle non-logged in state
+      ]);
+      setProducts(productsRes.data.data || []);
+      setWishlistedIds(wishlistRes.data.data || []);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching data:", error);
       toast.error("Failed to load products");
     } finally {
       setLoading(false);
@@ -24,8 +29,27 @@ const Products = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
+
+  const toggleWishlist = async (productId) => {
+    try {
+      const response = await apiClient.post("/wishlist/toggle", { productId });
+      if (response.data.isWishlisted) {
+        setWishlistedIds([...wishlistedIds, productId]);
+        toast.success("Added to wishlist");
+      } else {
+        setWishlistedIds(wishlistedIds.filter(id => id !== productId));
+        toast.success("Removed from wishlist");
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.warning("Please sign in to save items");
+      } else {
+        toast.error("Wishlist action failed");
+      }
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -184,11 +208,23 @@ const Products = () => {
 
                     <div className="flex items-center gap-2">
                       <button 
-                        className="group/heart p-2.5 rounded-xl bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all duration-300 cursor-pointer border border-transparent hover:border-red-100"
-                        title="Add to Wishlist"
-                        style={{ backgroundColor: "var(--mui-palette-background-default)" }}
+                        onClick={() => toggleWishlist(product._id)}
+                        className={`group/heart p-2.5 rounded-xl transition-all duration-300 cursor-pointer border ${
+                          wishlistedIds.includes(product._id)
+                            ? "bg-red-50 text-red-500 border-red-100"
+                            : "bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 border-transparent"
+                        }`}
+                        title={wishlistedIds.includes(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                        style={{ backgroundColor: wishlistedIds.includes(product._id) ? "" : "var(--mui-palette-background-default)" }}
                       >
-                        <svg className="w-5 h-5 transition-transform duration-300 group-hover/heart:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg 
+                          className={`w-5 h-5 transition-transform duration-300 group-hover/heart:scale-110 ${
+                            wishlistedIds.includes(product._id) ? "fill-current" : ""
+                          }`} 
+                          fill={wishlistedIds.includes(product._id) ? "currentColor" : "none"}
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 006.364-6.364 4.5 4.5 0 00-6.364 0L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                       </button>
