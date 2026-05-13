@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import apiClient from "../api/apiClient";
 
 const Wishlist = () => {
+  const navigate = useNavigate();
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +19,14 @@ const Wishlist = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMessageClick = (productId, sellerId) => {
+    if (!sellerId) {
+      toast.error("Seller information not available");
+      return;
+    }
+    navigate(`/chats?sellerId=${sellerId}&productId=${productId}`);
   };
 
   const handleRemove = async (productId) => {
@@ -148,6 +158,7 @@ const Wishlist = () => {
                         </svg>
                       </button>
                       <button 
+                        onClick={() => handleMessageClick(product._id, product.seller)}
                         className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-blue-600 text-white font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 cursor-pointer"
                       >
                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
